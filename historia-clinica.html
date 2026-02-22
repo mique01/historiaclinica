@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Clínica — Tu salud, unificada</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3;
+    --bg2: #efede8;
+    --bg3: #e5e2da;
+    --surface: #ffffff;
+    --border: #dedad3;
+    --border2: #ccc8be;
+    --text: #1a1916;
+    --text2: #5c5a54;
+    --text3: #9b9890;
+    --accent: #1a5c46;
+    --accent2: #2d8a68;
+    --accent-light: #e8f4ef;
+    --accent-border: #b3d9c9;
+    --red: #c0392b;
+    --red-light: #fdf0ee;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --blue: #1e5a9a;
+    --blue-light: #eff6ff;
+    --sidebar-w: 240px;
+    --topbar-h: 56px;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 1px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
+  }
+  html { font-size: 15px; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-weight: 400; }
+  button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  input, select, textarea { font-family: 'DM Sans', sans-serif; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+
+  /* LAYOUT */
+  .app-shell { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    transition: transform .2s;
+  }
+  .sidebar-logo { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo .app-name { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--text); }
+  .sidebar-logo .tenant-badge { font-size: .7rem; color: var(--text3); margin-top: 2px; }
+  .sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; }
+  .nav-section-label { font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 10px 10px 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius);
+    color: var(--text2); font-size: .875rem; font-weight: 500; cursor: pointer; transition: all .15s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); }
+  .nav-item .icon { width: 16px; text-align: center; flex-shrink: 0; }
+  .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
+  .user-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+  .avatar.lg { width: 42px; height: 42px; font-size: 1rem; }
+  .user-name { font-size: .8rem; font-weight: 600; color: var(--text); }
+  .user-role { font-size: .7rem; color: var(--text3); }
+
+  .main-area { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; padding: 0 24px; position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-family: 'Fraunces', serif; font-size: 1.05rem; flex: 1; }
+  .search-bar {
+    display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; flex: 1; max-width: 320px;
+  }
+  .search-bar input { border: none; background: none; outline: none; font-size: .85rem; color: var(--text); width: 100%; }
+  .search-bar input::placeholder { color: var(--text3); }
+  .page-content { padding: 24px; flex: 1; overflow-y: auto; max-width: 1100px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card-sm { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: .85rem; font-weight: 600; border: none; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg3); }
+  .btn-ghost { background: none; color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+  .btn-danger { background: var(--red-light); color: var(--red); }
+  .btn-danger:hover { background: #fce4e1; }
+  .btn-sm { padding: 5px 12px; font-size: .78rem; }
+  .btn-xs { padding: 3px 9px; font-size: .72rem; border-radius: 6px; }
+
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: .7rem; font-weight: 600; }
+  .badge-green { background: var(--accent-light); color: var(--accent); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-gray { background: var(--bg3); color: var(--text2); }
+
+  /* FORMS */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: .8rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .form-input {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: .875rem; color: var(--text); background: var(--surface); outline: none; transition: border .15s;
+  }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b9890' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+
+  /* TIMELINE */
+  .timeline { position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 18px; top: 24px; bottom: 0; width: 1px; background: var(--border); }
+  .timeline-item { display: flex; gap: 16px; margin-bottom: 20px; position: relative; }
+  .timeline-dot { width: 37px; height: 37px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; }
+  .timeline-dot.consulta { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+  .timeline-dot.lab { background: var(--amber-light); border-color: var(--amber); color: var(--amber); }
+  .timeline-dot.receta { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .timeline-dot.imagen { background: #f0f0f8; border-color: #7c6ad4; color: #7c6ad4; }
+  .timeline-dot.documento { background: var(--bg3); border-color: var(--border2); color: var(--text3); }
+  .timeline-dot.inbox { background: #fdf4e4; border-color: #d97706; color: #d97706; }
+  .timeline-content { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
+  .timeline-content:hover { border-color: var(--border2); }
+  .timeline-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .timeline-date { font-size: .72rem; color: var(--text3); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; background: var(--bg2); border-radius: 8px; padding: 3px; margin-bottom: 20px; }
+  .tab { padding: 7px 16px; border-radius: 6px; font-size: .82rem; font-weight: 500; border: none; background: none; color: var(--text2); cursor: pointer; transition: all .15s; }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; padding: 10px 14px; font-size: .72rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* MODAL/DRAWER */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn .15s; }
+  .modal { background: var(--surface); border-radius: 14px; padding: 28px; max-width: 560px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-md); animation: slideUp .2s; }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: 'Fraunces', serif; font-size: 1.2rem; }
+  .close-btn { background: var(--bg2); border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 1rem; cursor: pointer; }
+  .close-btn:hover { background: var(--bg3); }
+  .drawer { position: fixed; right: 0; top: 0; bottom: 0; width: min(480px, 100vw); background: var(--surface); border-left: 1px solid var(--border); z-index: 200; overflow-y: auto; animation: slideRight .2s; padding: 24px; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes slideRight { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* TOAST */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--text); color: white; padding: 12px 18px; border-radius: 10px; font-size: .84rem; max-width: 300px; animation: slideUp .2s; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 8px; }
+  .toast.success { background: var(--accent); }
+  .toast.error { background: var(--red); }
+  .toast.info { background: var(--blue); }
+
+  /* LANDING */
+  .landing { min-height: 100vh; background: var(--bg); }
+  .hero { padding: 100px 40px 80px; max-width: 900px; margin: 0 auto; text-align: center; }
+  .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.1; color: var(--text); }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p { font-size: 1.1rem; color: var(--text2); margin-top: 20px; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .hero-ctas { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+  .hero-ctas .btn { padding: 12px 28px; font-size: .95rem; }
+  .section { padding: 60px 40px; max-width: 900px; margin: 0 auto; }
+  .section-label { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .section-title { font-family: 'Fraunces', serif; font-size: clamp(1.6rem, 4vw, 2.4rem); margin-bottom: 14px; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 30px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .feature-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 14px; }
+  .feature-card h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 8px; }
+  .feature-card p { font-size: .85rem; color: var(--text2); line-height: 1.6; }
+  .landing-nav { padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(247,246,243,.92); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 50; }
+  .landing-logo { font-family: 'Fraunces', serif; font-size: 1.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; }
+  .pricing-card.featured { border-color: var(--accent); background: var(--accent-light); }
+  .price { font-family: 'Fraunces', serif; font-size: 2rem; color: var(--text); }
+  .price span { font-size: 1rem; color: var(--text3); font-family: 'DM Sans', sans-serif; }
+
+  /* UPLOAD ZONE */
+  .dropzone { border: 2px dashed var(--border2); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
+  .dropzone:hover, .dropzone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+  .dropzone .icon { font-size: 2rem; margin-bottom: 12px; }
+  .dropzone p { color: var(--text2); font-size: .9rem; }
+  .dropzone small { color: var(--text3); font-size: .78rem; }
+
+  /* STAT CARD */
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .stat-value { font-family: 'Fraunces', serif; font-size: 2.2rem; color: var(--text); line-height: 1; }
+  .stat-label { font-size: .78rem; color: var(--text3); margin-top: 4px; }
+  .stat-change { font-size: .75rem; color: var(--accent); margin-top: 8px; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 60px 30px; }
+  .empty-state .icon { font-size: 2.8rem; margin-bottom: 16px; opacity: .5; }
+  .empty-state h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--text2); margin-bottom: 8px; }
+  .empty-state p { font-size: .85rem; color: var(--text3); }
+
+  /* INBOX */
+  .inbox-item { padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+  .inbox-item:hover { background: var(--bg); }
+  .inbox-item.unread .inbox-subject { font-weight: 700; }
+  .inbox-subject { font-size: .9rem; color: var(--text); }
+  .inbox-meta { font-size: .75rem; color: var(--text3); margin-top: 3px; }
+  .attachment-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: .75rem; margin: 4px 4px 0 0; }
+  .category-tag { background: var(--blue-light); color: var(--blue); border-radius: 20px; padding: 2px 8px; font-size: .68rem; font-weight: 600; }
+
+  /* ACCESS GRANT */
+  .grant-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .grant-info { flex: 1; }
+  .grant-name { font-weight: 600; font-size: .9rem; }
+  .grant-detail { font-size: .77rem; color: var(--text3); margin-top: 2px; }
+
+  /* MEDICATION */
+  .med-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .med-item:last-child { border-bottom: none; }
+  .med-name { font-weight: 600; font-size: .9rem; }
+  .med-detail { font-size: .78rem; color: var(--text3); }
+
+  /* ROLE SWITCHER */
+  .role-switcher { display: flex; gap: 6px; background: var(--bg2); border-radius: 8px; padding: 3px; }
+  .role-btn { padding: 5px 12px; border-radius: 6px; font-size: .75rem; font-weight: 600; border: none; cursor: pointer; transition: all .15s; background: none; color: var(--text3); }
+  .role-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+  /* MISC */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .text-muted { color: var(--text3); font-size: .82rem; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .mb-1 { margin-bottom: 4px; }
+  .mb-2 { margin-bottom: 8px; }
+  .mb-3 { margin-bottom: 12px; }
+  .mb-4 { margin-bottom: 16px; }
+  .mb-6 { margin-bottom: 24px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+  .mt-6 { margin-top: 24px; }
+  .fw-600 { font-weight: 600; }
+  .fs-sm { font-size: .82rem; }
+  .text-center { text-align: center; }
+  .w-full { width: 100%; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main-area { margin-left: 0; }
+    .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useContext, createContext, useRef } = React;
+
+// ─── MOCK DB ───────────────────────────────────────────────────────────
+const mockDb = {
+  tenants: [
+    { id: 't1', name: 'OSDE', color: '#005da6', logo: '🔵' },
+    { id: 't2', name: 'Swiss Medical', color: '#c41230', logo: '🔴' },
+    { id: 't3', name: 'Galeno', color: '#1a5c46', logo: '🟢' },
+  ],
+  orgs: [
+    { id: 'o1', name: 'Clínica del Sol', tenantId: 't1', address: 'Av. Corrientes 1234, CABA' },
+    { id: 'o2', name: 'Centro Médico Norte', tenantId: 't2', address: 'Av. Cabildo 890, CABA' },
+  ],
+  providers: [
+    { id: 'p1', name: 'Dr. Martín García', specialty: 'Clínica Médica', orgId: 'o1', email: 'mgarcia@sol.com', matricula: 'MN 89234' },
+    { id: 'p2', name: 'Dra. Laura Sánchez', specialty: 'Cardiología', orgId: 'o1', email: 'lsanchez@sol.com', matricula: 'MN 72901' },
+    { id: 'p3', name: 'Dr. Pablo Ruiz', specialty: 'Traumatología', orgId: 'o2', email: 'pruiz@norte.com', matricula: 'MN 65432' },
+    { id: 'p4', name: 'Dra. Ana Ferreyra', specialty: 'Endocrinología', orgId: 'o2', email: 'aferreyra@norte.com', matricula: 'MN 91234' },
+    { id: 'p5', name: 'Dr. Roberto Méndez', specialty: 'Gastroenterología', orgId: 'o1', email: 'rmendez@sol.com', matricula: 'MN 54321' },
+  ],
+  patients: [
+    { id: 'pat1', name: 'Sofía Reyes', dob: '1988-05-12', bloodType: 'A+', allergies: ['Penicilina', 'Látex'], conditions: ['Hipotiroidismo', 'HTA'], email: 'sofia@email.com', phone: '11-4567-8901', emergencyContact: { name: 'Carlos Reyes', phone: '11-5678-9012', rel: 'Padre' } },
+    { id: 'pat2', name: 'Jorge Morales', dob: '1975-11-30', bloodType: 'O+', allergies: ['AAS'], conditions: ['Diabetes tipo 2'], email: 'jorge@email.com', phone: '11-2345-6789', emergencyContact: { name: 'Marta Morales', phone: '11-3456-7890', rel: 'Esposa' } },
+    { id: 'pat3', name: 'Valentina Cruz', dob: '1995-03-22', bloodType: 'B+', allergies: [], conditions: [], email: 'vale@email.com', phone: '11-8901-2345', emergencyContact: { name: 'Luis Cruz', phone: '11-9012-3456', rel: 'Padre' } },
+  ],
+  encounters: [
+    { id: 'enc1', patientId: 'pat1', providerId: 'p1', orgId: 'o1', date: '2025-06-10', reason: 'Control clínica general', diagnosis: 'Hipotiroidismo compensado. Presión arterial dentro de rangos.', notes: 'Paciente refiere buena tolerancia al Eutirox. Se solicita TSH de control en 3 meses.', icd10: 'E03.9', type: 'consulta', source: 'provider' },
+    { id: 'enc2', patientId: 'pat1', providerId: 'p2', orgId: 'o1', date: '2025-04-15', reason: 'Evaluación cardiológica anual', diagnosis: 'Cardiopatía hipertensiva leve. Ritmo sinusal normal.', notes: 'ECG y ecocardiograma dentro de parámetros normales. Continuar Enalapril.', icd10: 'I10', type: 'consulta', source: 'provider' },
+    { id: 'enc3', patientId: 'pat1', providerId: 'p4', orgId: 'o2', date: '2025-01-20', reason: 'Control endocrinológico', diagnosis: 'TSH levemente elevada. Ajuste de dosis Eutirox.', notes: 'Se aumenta dosis de levotiroxina a 75mcg/día.', icd10: 'E03.9', type: 'consulta', source: 'provider' },
+    { id: 'enc4', patientId: 'pat2', providerId: 'p1', orgId: 'o1', date: '2025-05-20', reason: 'Control glucémico', diagnosis: 'Diabetes tipo 2 con descompensación leve.', notes: 'HbA1c 7.8%. Se ajusta metformina. Se solicita perfil lipídico.', icd10: 'E11.9', type: 'consulta', source: 'provider' },
+  ],
+  documents: [
+    { id: 'doc1', patientId: 'pat1', title: 'Análisis de sangre completo', type: 'lab', date: '2025-06-01', source: 'inbox', orgId: 'o1', notes: 'TSH, T4, hemograma completo, lipidograma', category: 'lab', filename: 'analisis_jun2025.pdf', size: '342 KB', tags: ['TSH', 'Hemograma'] },
+    { id: 'doc2', patientId: 'pat1', title: 'Ecocardiograma', type: 'imagen', date: '2025-04-16', source: 'provider', providerId: 'p2', orgId: 'o1', notes: 'Función ventricular normal. FE 62%.', filename: 'eco_abr2025.pdf', size: '1.2 MB', tags: ['Corazón', 'Imagen'] },
+    { id: 'doc3', patientId: 'pat1', title: 'Receta: Eutirox 75mcg', type: 'receta', date: '2025-01-20', source: 'provider', providerId: 'p4', orgId: 'o2', notes: '', filename: 'receta_ene2025.pdf', size: '120 KB', tags: ['Tiroides'] },
+    { id: 'doc4', patientId: 'pat1', title: 'Radiografía de tórax', type: 'imagen', date: '2024-11-05', source: 'patient', notes: 'Subida por el paciente', filename: 'rx_torax_2024.jpg', size: '850 KB', tags: ['Pulmones'] },
+    { id: 'doc5', patientId: 'pat1', title: 'Informe cardiológico previo', type: 'informe', date: '2024-08-12', source: 'patient', notes: 'Guardia Hospital Italiano', filename: 'informe_hital_2024.pdf', size: '450 KB', tags: [] },
+    { id: 'doc6', patientId: 'pat2', title: 'Glucemia en ayunas', type: 'lab', date: '2025-05-18', source: 'inbox', notes: '', filename: 'lab_glucemia.pdf', size: '210 KB', tags: ['Glucemia'] },
+  ],
+  medications: [
+    { id: 'm1', patientId: 'pat1', name: 'Eutirox (Levotiroxina)', dose: '75 mcg', frequency: '1 vez al día, en ayunas', duration: 'Crónico', prescribedBy: 'p4', date: '2025-01-20', active: true },
+    { id: 'm2', patientId: 'pat1', name: 'Enalapril', dose: '10 mg', frequency: '1 vez al día', duration: 'Crónico', prescribedBy: 'p2', date: '2025-04-15', active: true },
+    { id: 'm3', patientId: 'pat1', name: 'Aspirina', dose: '100 mg', frequency: '1 vez al día', duration: 'Crónico', prescribedBy: 'p1', date: '2025-06-10', active: true },
+    { id: 'm4', patientId: 'pat2', name: 'Metformina', dose: '1000 mg', frequency: '2 veces al día con comidas', duration: 'Crónico', prescribedBy: 'p1', date: '2025-05-20', active: true },
+  ],
+  accessGrants: [
+    { id: 'ag1', patientId: 'pat1', providerId: 'p1', providerEmail: 'mgarcia@sol.com', providerName: 'Dr. Martín García', scope: 'read_write', grantedAt: '2025-01-15', expiresAt: '2025-12-31', active: true },
+    { id: 'ag2', patientId: 'pat1', providerId: 'p2', providerEmail: 'lsanchez@sol.com', providerName: 'Dra. Laura Sánchez', scope: 'read', grantedAt: '2025-03-01', expiresAt: '2025-08-31', active: true },
+  ],
+  auditLog: [
+    { id: 'a1', patientId: 'pat1', actor: 'Dra. Laura Sánchez', actorType: 'provider', event: 'VIEW_RECORD', item: 'Historia clínica', ts: '2025-06-12 10:23' },
+    { id: 'a2', patientId: 'pat1', actor: 'Dr. Martín García', actorType: 'provider', event: 'CREATE_ENCOUNTER', item: 'Consulta clínica general', ts: '2025-06-10 14:05' },
+    { id: 'a3', patientId: 'pat1', actor: 'Sofía Reyes', actorType: 'patient', event: 'UPLOAD_DOC', item: 'Radiografía de tórax', ts: '2024-11-05 18:30' },
+    { id: 'a4', patientId: 'pat1', actor: 'Sofía Reyes', actorType: 'patient', event: 'SHARE_GRANTED', item: 'Dr. Martín García (90 días)', ts: '2025-01-15 09:12' },
+    { id: 'a5', patientId: 'pat1', actor: 'Dra. Laura Sánchez', actorType: 'provider', event: 'DOWNLOAD_DOC', item: 'Análisis de sangre completo', ts: '2025-06-12 10:25' },
+    { id: 'a6', patientId: 'pat1', actor: 'Dra. Ana Ferreyra', actorType: 'provider', event: 'VIEW_RECORD', item: 'Historia clínica', ts: '2025-01-20 11:40' },
+  ],
+  inboxMessages: [
+    { id: 'inbox1', patientId: 'pat1', from: 'laboratorio@lalaboratoria.com.ar', subject: 'Resultados análisis de sangre - Sofía Reyes', date: '2025-06-01', unread: true, attachments: [
+      { id: 'att1', name: 'analisis_sangre_jun2025.pdf', size: '342 KB', suggestedType: 'lab', suggestedLabel: 'Laboratorio', confidence: 0.92, accepted: null }
+    ]},
+    { id: 'inbox2', patientId: 'pat1', from: 'secretaria@cardiocenter.com.ar', subject: 'Informe Ecocardiograma Doppler - Dra. Sánchez', date: '2025-04-16', unread: false, attachments: [
+      { id: 'att2', name: 'eco_abril2025.pdf', size: '1.2 MB', suggestedType: 'imagen', suggestedLabel: 'Imagen / Estudio', confidence: 0.87, accepted: true }
+    ]},
+    { id: 'inbox3', patientId: 'pat1', from: 'noreply@osdecomplejo.com', subject: 'Resumen de prestaciones Mayo 2025', date: '2025-06-03', unread: true, attachments: [
+      { id: 'att3', name: 'resumen_prestaciones.pdf', size: '89 KB', suggestedType: 'otro', suggestedLabel: 'Otro documento', confidence: 0.55, accepted: null }
+    ]},
+  ],
+};
+
+// ─── FAKE API ──────────────────────────────────────────────────────────
+const api = {
+  getPatient: (id) => Promise.resolve(mockDb.patients.find(p => p.id === id)),
+  getTimeline: (patientId) => {
+    const events = [
+      ...mockDb.encounters.filter(e => e.patientId === patientId).map(e => ({ ...e, eventType: 'consulta' })),
+      ...mockDb.documents.filter(d => d.patientId === patientId).map(d => ({ ...d, eventType: d.type })),
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+    return Promise.resolve(events);
+  },
+  getDocuments: (patientId) => Promise.resolve(mockDb.documents.filter(d => d.patientId === patientId)),
+  getMedications: (patientId) => Promise.resolve(mockDb.medications.filter(m => m.patientId === patientId)),
+  getAccessGrants: (patientId) => Promise.resolve(mockDb.accessGrants.filter(g => g.patientId === patientId)),
+  getAuditLog: (patientId) => Promise.resolve(mockDb.auditLog.filter(a => a.patientId === patientId)),
+  getInbox: (patientId) => Promise.resolve(mockDb.inboxMessages.filter(m => m.patientId === patientId)),
+  getProviderPatients: (providerId) => {
+    const grants = mockDb.accessGrants.filter(g => g.providerId === providerId && g.active);
+    return Promise.resolve(grants.map(g => ({ ...mockDb.patients.find(p => p.id === g.patientId), grant: g })).filter(Boolean));
+  },
+  createEncounter: (data) => {
+    const enc = { id: 'enc' + Date.now(), ...data, date: new Date().toISOString().slice(0,10), source: 'provider' };
+    mockDb.encounters.push(enc);
+    mockDb.auditLog.unshift({ id: 'a'+Date.now(), patientId: data.patientId, actor: 'Dr. (Sesión actual)', actorType: 'provider', event: 'CREATE_ENCOUNTER', item: data.reason, ts: new Date().toLocaleString('es-AR') });
+    return Promise.resolve(enc);
+  },
+  uploadDocument: (data) => {
+    const doc = { id: 'doc' + Date.now(), ...data, source: 'patient' };
+    mockDb.documents.unshift(doc);
+    mockDb.auditLog.unshift({ id: 'a'+Date.now(), patientId: data.patientId, actor: 'Sofía Reyes', actorType: 'patient', event: 'UPLOAD_DOC', item: data.title, ts: new Date().toLocaleString('es-AR') });
+    return Promise.resolve(doc);
+  },
+  createAccessGrant: (data) => {
+    const grant = { id: 'ag'+Date.now(), ...data, grantedAt: new Date().toISOString().slice(0,10), active: true };
+    mockDb.accessGrants.push(grant);
+    mockDb.auditLog.unshift({ id: 'a'+Date.now(), patientId: data.patientId, actor: 'Sofía Reyes', actorType: 'patient', event: 'SHARE_GRANTED', item: `${data.providerEmail} (${data.duration} días)`, ts: new Date().toLocaleString('es-AR') });
+    return Promise.resolve(grant);
+  },
+  revokeAccessGrant: (id) => {
+    const g = mockDb.accessGrants.find(g => g.id === id);
+    if (g) g.active = false;
+    return Promise.resolve();
+  },
+  acceptInboxAttachment: (msgId, attId, patientId, category) => {
+    const msg = mockDb.inboxMessages.find(m => m.id === msgId);
+    const att = msg?.attachments.find(a => a.id === attId);
+    if (att) {
+      att.accepted = true;
+      const doc = { id: 'doc'+Date.now(), patientId, title: att.name.replace('.pdf','').replace(/_/g,' '), type: category, date: msg.date, source: 'inbox', filename: att.name, size: att.size, tags: [], notes: `Recibido de ${msg.from}` };
+      mockDb.documents.unshift(doc);
+    }
+    return Promise.resolve();
+  },
+  dismissInboxAttachment: (msgId, attId) => {
+    const msg = mockDb.inboxMessages.find(m => m.id === msgId);
+    const att = msg?.attachments.find(a => a.id === attId);
+    if (att) att.accepted = false;
+    return Promise.resolve();
+  },
+  getOrgStats: (orgId) => Promise.resolve({ encounters: mockDb.encounters.filter(e => e.orgId === orgId).length, documents: mockDb.documents.filter(d => d.orgId === orgId).length, providers: mockDb.providers.filter(p => p.orgId === orgId).length }),
+  getOrgProviders: (orgId) => Promise.resolve(mockDb.providers.filter(p => p.orgId === orgId)),
+};
+
+// ─── AUTH CONTEXT ──────────────────────────────────────────────────────
+const AuthContext = createContext(null);
+const useAuth = () => useContext(AuthContext);
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [tenant, setTenant] = useState(null);
+  const login = (userData, tenantData) => { setUser(userData); if (tenantData) setTenant(tenantData); };
+  const logout = () => { setUser(null); setTenant(null); };
+  return <AuthContext.Provider value={{ user, tenant, login, logout }}>{children}</AuthContext.Provider>;
+};
+
+// ─── TOAST CONTEXT ─────────────────────────────────────────────────────
+const ToastContext = createContext(null);
+const useToast = () => useContext(ToastContext);
+const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = useState([]);
+  const show = (msg, type = 'success') => {
+    const id = Date.now();
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
+  };
+  return (
+    <ToastContext.Provider value={show}>
+      {children}
+      <div className="toast-container">
+        {toasts.map(t => <div key={t.id} className={`toast ${t.type}`}>{t.type==='success'?'✓':t.type==='error'?'✕':'ℹ'} {t.msg}</div>)}
+      </div>
+    </ToastContext.Provider>
+  );
+};
+
+// ─── ICONS (inline SVG emoji replacements) ─────────────────────────────
+const Icon = ({ name, size = 14 }) => {
+  const icons = {
+    home: '⊞', timeline: '◎', docs: '⊟', upload: '⊕', inbox: '✉', share: '⊗', audit: '⊡',
+    patient: '◉', encounters: '⊕', meds: '⊞', settings: '⚙', staff: '◈',
+    search: '⌕', bell: '◎', logout: '⊣', back: '←', close: '×', plus: '+',
+    check: '✓', x: '✕', eye: '◉', download: '⊻', revoke: '⊘', calendar: '⊟',
+    lab: '⊡', imagen: '⊞', receta: '⊕', consulta: '◎', documento: '⊟',
+    inbox2: '✉', info: 'ℹ', shield: '⊡', clock: '◷', star: '★', org: '⊟',
+    mail: '✉',
+  };
+  return <span style={{ fontSize: size }}>{icons[name] || '·'}</span>;
+};
+
+// ─── HELPER COMPONENTS ─────────────────────────────────────────────────
+const RoleBadge = ({ role }) => {
+  const map = { patient: ['Paciente','badge-blue'], provider: ['Profesional','badge-green'], org_admin: ['Admin Centro','badge-amber'] };
+  const [label, cls] = map[role] || ['?','badge-gray'];
+  return <span className={`badge ${cls}`}>{label}</span>;
+};
+
+const SourceBadge = ({ source }) => {
+  const map = { provider: ['Profesional','badge-green'], patient: ['Paciente','badge-blue'], inbox: ['Email','badge-amber'] };
+  const [label, cls] = map[source] || ['–','badge-gray'];
+  return <span className={`badge ${cls}`}>{label}</span>;
+};
+
+const EventBadge = ({ event }) => {
+  const map = {
+    VIEW_RECORD: 'badge-blue', DOWNLOAD_DOC: 'badge-amber', CREATE_ENCOUNTER: 'badge-green',
+    UPLOAD_DOC: 'badge-green', SHARE_GRANTED: 'badge-amber', SHARE_REVOKED: 'badge-red',
+  };
+  return <span className={`badge ${map[event]||'badge-gray'}`}>{event.replace(/_/g,' ')}</span>;
+};
+
+const EmptyState = ({ icon, title, desc, action }) => (
+  <div className="empty-state">
+    <div className="icon">{icon}</div>
+    <h3>{title}</h3>
+    <p>{desc}</p>
+    {action && <div className="mt-4">{action}</div>}
+  </div>
+);
+
+const Modal = ({ title, onClose, children }) => (
+  <div className="overlay" onClick={e => e.target===e.currentTarget&&onClose()}>
+    <div className="modal">
+      <div className="modal-header">
+        <h3 className="modal-title">{title}</h3>
+        <button className="close-btn" onClick={onClose}>×</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+const Drawer = ({ title, onClose, children }) => (
+  <div className="overlay" onClick={e => e.target===e.currentTarget&&onClose()}>
+    <div className="drawer">
+      <div className="modal-header">
+        <h3 className="modal-title">{title}</h3>
+        <button className="close-btn" onClick={onClose}>×</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+const UploadDropzone = ({ onFile }) => {
+  const [drag, setDrag] = useState(false);
+  const [file, setFile] = useState(null);
+  const inputRef = useRef();
+  const handle = (f) => { setFile(f); onFile && onFile(f); };
+  return (
+    <div className={`dropzone ${drag ? 'drag-over' : ''}`}
+      onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)}
+      onDrop={e=>{e.preventDefault();setDrag(false);handle(e.dataTransfer.files[0])}}
+      onClick={()=>inputRef.current.click()}>
+      <input ref={inputRef} type="file" style={{display:'none'}} onChange={e=>handle(e.target.files[0])} />
+      <div className="icon">📎</div>
+      {file ? <p style={{color:'var(--accent)',fontWeight:600}}>{file.name}</p> : <>
+        <p>Arrastrá un archivo aquí o <strong>hacé clic para seleccionar</strong></p>
+        <small>PDF, JPG, PNG — máximo 20 MB</small>
+      </>}
+    </div>
+  );
+};
+
+// ─── TIMELINE ITEM ─────────────────────────────────────────────────────
+const typeIcon = { consulta: '🩺', lab: '🧪', imagen: '🖼', receta: '💊', documento: '📄', informe: '📋', inbox: '📨' };
+const TimelineItem = ({ item, onClick }) => {
+  const provName = mockDb.providers.find(p => p.id === item.providerId)?.name || '';
+  return (
+    <div className="timeline-item">
+      <div className={`timeline-dot ${item.eventType || item.type}`}><span style={{fontSize:14}}>{typeIcon[item.eventType||item.type]||'📄'}</span></div>
+      <div className="timeline-content" onClick={() => onClick(item)}>
+        <div className="flex items-center justify-between gap-2">
+          <span style={{fontWeight:600, fontSize:'.9rem'}}>{item.reason || item.title}</span>
+          <SourceBadge source={item.source} />
+        </div>
+        <div className="timeline-meta">
+          {item.diagnosis && <span className="text-muted">{item.diagnosis.slice(0,60)}…</span>}
+          {item.notes && !item.diagnosis && <span className="text-muted">{item.notes.slice(0,80)}</span>}
+          <span className="timeline-date">{item.date}</span>
+          {provName && <span className="text-muted">{provName}</span>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── PAGES ─────────────────────────────────────────────────────────────
+
+// LANDING
+const LandingPage = ({ onNavigate }) => {
+  const [showDemo, setShowDemo] = useState(false);
+  const features = [
+    { icon: '🩺', color: '#e8f4ef', title: 'Cargado por tu médico', desc: 'Los profesionales suben consultas, prescripciones y estudios directamente a tu historia.' },
+    { icon: '📎', color: '#eff6ff', title: 'Subido por vos', desc: 'Cargá estudios propios, informes de guardias o documentos en cualquier momento.' },
+    { icon: '✉️', color: '#fef3c7', title: 'Recibido por email', desc: 'Laboratorios y centros envían resultados a tu dirección única. La app los categoriza y vos confirmás.' },
+  ];
+  const benefits = [
+    { icon: '🔒', title: 'Vos tenés el control', desc: 'Compartís solo con quien querés, por el tiempo que querés. Podés revocar acceso en cualquier momento.' },
+    { icon: '📋', title: 'Auditoría completa', desc: 'Sabés exactamente quién vio o descargó tu historia clínica.' },
+    { icon: '⚡', title: 'Para el médico también', desc: 'El profesional carga una consulta en 90 segundos. Sin sistemas lentos.' },
+    { icon: '🏥', title: 'Para instituciones', desc: 'Mutuales y centros médicos ofrecen Historia Clínica como beneficio a sus afiliados.' },
+  ];
+  return (
+    <div className="landing">
+      <nav className="landing-nav">
+        <div className="landing-logo">Historia Clínica</div>
+        <div style={{display:'flex',gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>onNavigate('login')}>Ingresar</button>
+          <button className="btn btn-primary btn-sm" onClick={()=>setShowDemo(true)}>Solicitar demo</button>
+        </div>
+      </nav>
+
+      <div className="hero">
+        <div style={{display:'inline-block',background:'var(--accent-light)',color:'var(--accent)',borderRadius:20,padding:'4px 14px',fontSize:'.78rem',fontWeight:700,letterSpacing:'.06em',textTransform:'uppercase',marginBottom:20}}>Tu salud, unificada</div>
+        <h1>Tu historial médico,<br/>siempre <em>completo</em> y a mano</h1>
+        <p>Estudios en un lugar, consultas en otro, recetas perdidas. Historia Clínica centraliza toda tu información médica y te da control real sobre quién la ve.</p>
+        <div className="hero-ctas">
+          <button className="btn btn-primary" onClick={()=>onNavigate('login')}>Empezar gratis</button>
+          <button className="btn btn-secondary" onClick={()=>setShowDemo(true)}>Solicitar demo para institución</button>
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="section-label">Cómo funciona</div>
+        <h2 className="section-title">Tres formas de que tu historia llegue</h2>
+        <div className="feature-grid">
+          {features.map(f => (
+            <div key={f.title} className="feature-card">
+              <div className="feature-icon" style={{background:f.color}}>{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="section" style={{background:'var(--bg2)',borderRadius:20,margin:'0 40px'}}>
+        <div className="section-label">Beneficios</div>
+        <h2 className="section-title">Todo lo que necesitás, nada de más</h2>
+        <div className="feature-grid" style={{marginTop:24}}>
+          {benefits.map(b => (
+            <div key={b.title} style={{display:'flex',gap:14,alignItems:'flex-start'}}>
+              <div style={{fontSize:'1.4rem',flexShrink:0}}>{b.icon}</div>
+              <div><div style={{fontWeight:600,marginBottom:4}}>{b.title}</div><div style={{fontSize:'.83rem',color:'var(--text2)',lineHeight:1.6}}>{b.desc}</div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="section-label">Precios</div>
+        <h2 className="section-title">Simple y transparente</h2>
+        <div className="pricing-grid">
+          <div className="pricing-card">
+            <div style={{fontSize:'.85rem',fontWeight:600,marginBottom:8}}>Plan Individual</div>
+            <div className="price">USD 2–3 <span>/mes</span></div>
+            <p style={{fontSize:'.83rem',color:'var(--text2)',marginTop:12,lineHeight:1.6}}>Historia clínica ilimitada, inbox de email, compartir con hasta 10 profesionales, auditoría completa.</p>
+            <button className="btn btn-primary w-full mt-3" onClick={()=>onNavigate('login')} style={{justifyContent:'center'}}>Comenzar</button>
+          </div>
+          <div className="pricing-card featured">
+            <div style={{fontSize:'.85rem',fontWeight:600,marginBottom:8}}>Institucional / Mutual</div>
+            <div className="price" style={{fontSize:'1.4rem',marginTop:8}}>Contactanos</div>
+            <p style={{fontSize:'.83rem',color:'var(--text2)',marginTop:12,lineHeight:1.6}}>Ofrecé Historia Clínica como beneficio a tus afiliados. Branding personalizado, soporte prioritario.</p>
+            <button className="btn btn-primary w-full mt-3" onClick={()=>setShowDemo(true)} style={{justifyContent:'center'}}>Solicitar demo</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{textAlign:'center',padding:'40px',color:'var(--text3)',fontSize:'.78rem',borderTop:'1px solid var(--border)'}}>
+        © 2025 Historia Clínica — Todos los derechos reservados
+      </div>
+
+      {showDemo && (
+        <Modal title="Solicitar demo institucional" onClose={()=>setShowDemo(false)}>
+          <div className="form-group"><label className="form-label">Institución</label><input className="form-input" placeholder="Nombre de la mutual/clínica" /></div>
+          <div className="form-group"><label className="form-label">Tu nombre</label><input className="form-input" placeholder="Nombre completo" /></div>
+          <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" placeholder="tu@empresa.com" /></div>
+          <div className="form-group"><label className="form-label">Mensaje (opcional)</label><textarea className="form-input" placeholder="Contanos tu caso de uso…" /></div>
+          <button className="btn btn-primary w-full" style={{justifyContent:'center'}} onClick={()=>setShowDemo(false)}>Enviar solicitud</button>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+// LOGIN
+const LoginPage = ({ onNavigate, onLogin }) => {
+  const [step, setStep] = useState('type'); // type | tenant | form
+  const [userType, setUserType] = useState('');
+  const [role, setRole] = useState('patient');
+  const [selectedTenant, setSelectedTenant] = useState(null);
+  const [email, setEmail] = useState('sofia@email.com');
+  const [pw, setPw] = useState('demo');
+
+  const handleLogin = () => {
+    const users = {
+      patient: { id: 'pat1', name: 'Sofía Reyes', role: 'patient', email: 'sofia@email.com', patientId: 'pat1' },
+      provider: { id: 'p1', name: 'Dr. Martín García', role: 'provider', email: 'mgarcia@sol.com', providerId: 'p1', orgId: 'o1' },
+      org_admin: { id: 'org1', name: 'Admin Clínica del Sol', role: 'org_admin', email: 'admin@sol.com', orgId: 'o1' },
+    };
+    onLogin(users[role], selectedTenant);
+  };
+
+  if (step === 'type') return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
+      <div style={{width:'100%',maxWidth:440,padding:24}}>
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <div style={{fontFamily:'Fraunces, serif',fontSize:'1.6rem',marginBottom:8}}>Historia Clínica</div>
+          <div style={{color:'var(--text3)',fontSize:'.9rem'}}>Iniciá sesión para continuar</div>
+        </div>
+        <div className="card" style={{padding:32}}>
+          <div className="mb-4" style={{fontWeight:600,color:'var(--text2)',fontSize:'.85rem'}}>¿Cómo querés ingresar?</div>
+          <div className="stack">
+            <button className="btn btn-secondary w-full" style={{justifyContent:'flex-start'}} onClick={()=>{setUserType('mutual');setStep('tenant')}}>
+              🏥  Soy afiliado (ingreso con mi mutual)
+            </button>
+            <button className="btn btn-secondary w-full" style={{justifyContent:'flex-start'}} onClick={()=>{setUserType('individual');setStep('form')}}>
+              👤  Plan individual
+            </button>
+          </div>
+          <hr className="divider" />
+          <div className="text-center text-muted">¿No tenés cuenta? <a href="#" onClick={e=>{e.preventDefault();setStep('form')}} style={{color:'var(--accent)'}}>Crear cuenta</a></div>
+        </div>
+        <div className="mt-3 text-center"><button className="btn btn-ghost btn-sm" onClick={()=>onNavigate('landing')}>← Volver al inicio</button></div>
+      </div>
+    </div>
+  );
+
+  if (step === 'tenant') return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
+      <div style={{width:'100%',maxWidth:440,padding:24}}>
+        <div style={{textAlign:'center',marginBottom:24}}>
+          <div style={{fontFamily:'Fraunces, serif',fontSize:'1.4rem'}}>Seleccioná tu mutual</div>
+        </div>
+        <div className="stack">
+          {mockDb.tenants.map(t => (
+            <button key={t.id} className={`card ${selectedTenant?.id===t.id?'btn-primary':''}`} style={{border:`2px solid ${selectedTenant?.id===t.id?t.color:'var(--border)'}`,textAlign:'left',cursor:'pointer',display:'flex',alignItems:'center',gap:14}}
+              onClick={()=>setSelectedTenant(t)}>
+              <span style={{fontSize:'1.8rem'}}>{t.logo}</span>
+              <div>
+                <div style={{fontWeight:700}}>{t.name}</div>
+                <div style={{fontSize:'.78rem',color:'var(--text3)'}}>Cobertura médica</div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 flex gap-2">
+          <button className="btn btn-secondary" onClick={()=>setStep('type')}>← Volver</button>
+          <button className="btn btn-primary" style={{flex:1}} disabled={!selectedTenant} onClick={()=>setStep('form')}>Continuar</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
+      <div style={{width:'100%',maxWidth:440,padding:24}}>
+        {selectedTenant && (
+          <div style={{textAlign:'center',marginBottom:16,padding:'10px',background:'var(--bg2)',borderRadius:10,border:'1px solid var(--border)'}}>
+            <span style={{fontSize:'1.4rem'}}>{selectedTenant.logo}</span> <strong>{selectedTenant.name}</strong>
+          </div>
+        )}
+        <div className="card" style={{padding:32}}>
+          <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.3rem',marginBottom:20}}>Ingresá a tu cuenta</h2>
+          
+          <div className="mb-4">
+            <div className="form-label">Rol (demo)</div>
+            <div className="role-switcher">
+              {[['patient','Paciente'],['provider','Profesional'],['org_admin','Centro']].map(([r,l])=>(
+                <button key={r} className={`role-btn ${role===r?'active':''}`} onClick={()=>{setRole(r); setEmail(r==='patient'?'sofia@email.com':r==='provider'?'mgarcia@sol.com':'admin@sol.com')}}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-group"><label className="form-label">Email</label><input className="form-input" value={email} onChange={e=>setEmail(e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">Contraseña</label><input className="form-input" type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="demo" /></div>
+          <button className="btn btn-primary w-full mt-2" style={{justifyContent:'center'}} onClick={handleLogin}>Ingresar</button>
+          <div className="mt-3 text-center text-muted fs-sm">Esta es una demo — cualquier contraseña funciona</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── APP SHELL ─────────────────────────────────────────────────────────
+const AppShell = ({ page, setPage, role }) => {
+  const { user, tenant, logout } = useAuth();
+  const navs = {
+    patient: [
+      { page: 'dashboard', label: 'Dashboard', icon: '⊞' },
+      { page: 'timeline', label: 'Mi historia', icon: '◎' },
+      { page: 'documents', label: 'Documentos', icon: '⊟' },
+      { page: 'upload', label: 'Subir estudio', icon: '⊕' },
+      { page: 'inbox', label: 'Inbox email', icon: '✉' },
+      { page: 'sharing', label: 'Compartir', icon: '⊗' },
+      { page: 'audit', label: 'Auditoría', icon: '⊡' },
+    ],
+    provider: [
+      { page: 'pro-dashboard', label: 'Dashboard', icon: '⊞' },
+      { page: 'pro-patients', label: 'Mis pacientes', icon: '◉' },
+      { page: 'pro-encounter', label: 'Nueva consulta', icon: '⊕' },
+    ],
+    org_admin: [
+      { page: 'org-dashboard', label: 'Dashboard', icon: '⊞' },
+      { page: 'org-staff', label: 'Profesionales', icon: '◈' },
+      { page: 'org-settings', label: 'Configuración', icon: '⚙' },
+    ],
+  };
+
+  const accentColor = tenant?.color || 'var(--accent)';
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            {tenant && <span style={{fontSize:'1.2rem'}}>{tenant.logo}</span>}
+            <div>
+              <div className="app-name">Historia Clínica</div>
+              {tenant && <div className="tenant-badge">{tenant.name}</div>}
+            </div>
+          </div>
+        </div>
+        <nav className="sidebar-nav">
+          {navs[role]?.map(n => (
+            <button key={n.page} className={`nav-item ${page===n.page?'active':''}`} onClick={()=>setPage(n.page)}>
+              <span className="icon" style={{fontSize:14}}>{n.icon}</span>{n.label}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div className="user-card">
+            <div className="avatar">{user?.name?.[0]}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="user-name" style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user?.name}</div>
+              <div className="user-role"><RoleBadge role={user?.role} /></div>
+            </div>
+            <button className="btn-ghost btn btn-xs" onClick={logout} title="Salir">⊣</button>
+          </div>
+        </div>
+      </aside>
+      <main className="main-area">
+        <header className="topbar">
+          <div className="topbar-title">{navs[role]?.find(n=>n.page===page)?.label || ''}</div>
+          <div className="search-bar">
+            <span style={{color:'var(--text3)',fontSize:12}}>⌕</span>
+            <input placeholder="Buscar diagnósticos, documentos…" />
+          </div>
+          {tenant && <div style={{width:8,height:8,borderRadius:'50%',background:tenant.color,flexShrink:0}} title={tenant.name} />}
+        </header>
+        <PageRouter page={page} setPage={setPage} role={role} />
+      </main>
+    </div>
+  );
+};
+
+// ─── PATIENT PAGES ─────────────────────────────────────────────────────
+const PatientDashboard = ({ setPage }) => {
+  const [patient, setPatient] = useState(null);
+  const [meds, setMeds] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const [grants, setGrants] = useState([]);
+  useEffect(()=>{ api.getPatient('pat1').then(setPatient); api.getMedications('pat1').then(setMeds); api.getDocuments('pat1').then(setDocs); api.getAccessGrants('pat1').then(g=>setGrants(g.filter(x=>x.active))); },[]);
+  const age = patient ? Math.floor((Date.now()-new Date(patient.dob))/(365.25*24*3600*1000)) : '';
+  return (
+    <div className="page-content">
+      {patient && (
+        <>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 style={{fontFamily:'Fraunces, serif',fontSize:'1.6rem'}}>Hola, {patient.name.split(' ')[0]} 👋</h1>
+              <p className="text-muted" style={{marginTop:4}}>Tu historia clínica está actualizada</p>
+            </div>
+            <div className="flex gap-2">
+              <button className="btn btn-secondary btn-sm" onClick={()=>setPage('upload')}>📎 Subir estudio</button>
+              <button className="btn btn-primary btn-sm" onClick={()=>setPage('sharing')}>⊗ Compartir historia</button>
+            </div>
+          </div>
+
+          <div className="grid-4 mb-4">
+            <div className="stat-card"><div className="stat-value">{age}</div><div className="stat-label">años</div></div>
+            <div className="stat-card"><div className="stat-value">{patient.allergies.length}</div><div className="stat-label">alergias registradas</div></div>
+            <div className="stat-card"><div className="stat-value">{meds.filter(m=>m.active).length}</div><div className="stat-label">medicamentos activos</div></div>
+            <div className="stat-card"><div className="stat-value">{grants.length}</div><div className="stat-label">accesos activos</div></div>
+          </div>
+
+          <div className="grid-2">
+            <div className="card">
+              <h3 className="fw-600 mb-3" style={{fontSize:'.9rem'}}>Resumen de salud</h3>
+              <div className="mb-2"><span className="text-muted fs-sm">Tipo de sangre: </span><strong>{patient.bloodType}</strong></div>
+              <div className="mb-2">
+                <span className="text-muted fs-sm">Alergias: </span>
+                {patient.allergies.map(a=><span key={a} className="badge badge-red" style={{marginRight:4}}>{a}</span>)}
+              </div>
+              <div>
+                <span className="text-muted fs-sm">Condiciones crónicas: </span>
+                {patient.conditions.map(c=><span key={c} className="badge badge-amber" style={{marginRight:4}}>{c}</span>)}
+              </div>
+            </div>
+            <div className="card">
+              <h3 className="fw-600 mb-3" style={{fontSize:'.9rem'}}>Medicación actual</h3>
+              {meds.filter(m=>m.active).slice(0,3).map(m=>(
+                <div key={m.id} className="med-item">
+                  <div style={{fontSize:'1.1rem'}}>💊</div>
+                  <div><div className="med-name">{m.name}</div><div className="med-detail">{m.dose} · {m.frequency}</div></div>
+                </div>
+              ))}
+            </div>
+            <div className="card">
+              <h3 className="fw-600 mb-3" style={{fontSize:'.9rem'}}>Últimos documentos</h3>
+              {docs.slice(0,3).map(d=>(
+                <div key={d.id} className="flex items-center gap-2 mb-2">
+                  <span style={{fontSize:'1rem'}}>{typeIcon[d.type]||'📄'}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:'.85rem',fontWeight:600}}>{d.title}</div>
+                    <div className="text-muted fs-sm">{d.date}</div>
+                  </div>
+                  <SourceBadge source={d.source} />
+                </div>
+              ))}
+              <button className="btn btn-ghost btn-xs mt-2" onClick={()=>setPage('documents')}>Ver todos →</button>
+            </div>
+            <div className="card">
+              <h3 className="fw-600 mb-3" style={{fontSize:'.9rem'}}>Accesos activos</h3>
+              {grants.slice(0,3).map(g=>(
+                <div key={g.id} className="flex items-center gap-2 mb-2">
+                  <div className="avatar" style={{width:28,height:28,fontSize:'.7rem'}}>{g.providerName[0]}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:'.85rem',fontWeight:600}}>{g.providerName}</div>
+                    <div className="text-muted fs-sm">Expira {g.expiresAt}</div>
+                  </div>
+                  <span className="badge badge-green">Activo</span>
+                </div>
+              ))}
+              <button className="btn btn-ghost btn-xs mt-2" onClick={()=>setPage('sharing')}>Gestionar →</button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const TimelinePage = () => {
+  const [events, setEvents] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [selected, setSelected] = useState(null);
+  useEffect(()=>{ api.getTimeline('pat1').then(setEvents); },[]);
+  const types = ['all','consulta','lab','imagen','receta','documento'];
+  const filtered = filter === 'all' ? events : events.filter(e => (e.eventType||e.type) === filter);
+  const prov = (id) => mockDb.providers.find(p=>p.id===id);
+  return (
+    <div className="page-content">
+      <div className="tabs mb-4">
+        {types.map(t=><button key={t} className={`tab ${filter===t?'active':''}`} onClick={()=>setFilter(t)}>{t==='all'?'Todo':t.charAt(0).toUpperCase()+t.slice(1)}</button>)}
+      </div>
+      {filtered.length === 0 ? <EmptyState icon="📋" title="Sin eventos" desc="Cargá tu primera consulta o documento" /> : (
+        <div className="timeline">
+          {filtered.map(item=><TimelineItem key={item.id} item={item} onClick={setSelected} />)}
+        </div>
+      )}
+      {selected && (
+        <Drawer title={selected.reason || selected.title} onClose={()=>setSelected(null)}>
+          <div className="mb-3 flex gap-2 flex-wrap">
+            <span className="badge badge-gray">{selected.eventType||selected.type}</span>
+            <SourceBadge source={selected.source} />
+            <span className="text-muted fs-sm">{selected.date}</span>
+          </div>
+          {selected.diagnosis && <div className="mb-3"><div className="form-label">Diagnóstico</div><p style={{fontSize:'.9rem'}}>{selected.diagnosis}</p></div>}
+          {selected.notes && <div className="mb-3"><div className="form-label">Notas clínicas</div><p style={{fontSize:'.9rem',color:'var(--text2)'}}>{selected.notes}</p></div>}
+          {selected.icd10 && <div className="mb-3"><div className="form-label">CIE-10</div><span className="badge badge-blue">{selected.icd10}</span></div>}
+          {selected.providerId && prov(selected.providerId) && <div className="mb-3"><div className="form-label">Profesional</div><p style={{fontSize:'.9rem'}}>{prov(selected.providerId).name} — {prov(selected.providerId).specialty}</p></div>}
+          {selected.filename && <div className="mb-3"><div className="form-label">Archivo adjunto</div><div className="attachment-chip">📎 {selected.filename} <span className="text-muted">({selected.size})</span></div></div>}
+          <hr className="divider" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm">⊻ Descargar</button>
+          </div>
+        </Drawer>
+      )}
+    </div>
+  );
+};
+
+const DocumentsPage = ({ setPage }) => {
+  const [docs, setDocs] = useState([]);
+  const [view, setView] = useState('list');
+  const [filter, setFilter] = useState('all');
+  const [selected, setSelected] = useState(null);
+  const [search, setSearch] = useState('');
+  useEffect(()=>{ api.getDocuments('pat1').then(setDocs); },[]);
+  const types = ['all','lab','imagen','receta','informe','otro'];
+  const filtered = docs.filter(d => (filter==='all'||d.type===filter) && (d.title.toLowerCase().includes(search.toLowerCase()) || !search));
+
+  return (
+    <div className="page-content">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex gap-2">
+          {types.map(t=><button key={t} className={`btn btn-xs ${filter===t?'btn-primary':'btn-secondary'}`} onClick={()=>setFilter(t)}>{t==='all'?'Todo':t}</button>)}
+        </div>
+        <div className="flex gap-2">
+          <input className="form-input" style={{width:180,padding:'6px 10px',fontSize:'.8rem'}} placeholder="Buscar…" value={search} onChange={e=>setSearch(e.target.value)} />
+          <button className="btn btn-primary btn-sm" onClick={()=>setPage('upload')}>+ Subir</button>
+        </div>
+      </div>
+
+      {filtered.length === 0 ? <EmptyState icon="📁" title="Sin documentos" desc="Subí tu primer estudio" action={<button className="btn btn-primary" onClick={()=>setPage('upload')}>Subir documento</button>} /> : (
+        <div className="stack">
+          {filtered.map(d=>(
+            <div key={d.id} className="card-sm flex items-center gap-3 cursor-pointer" style={{cursor:'pointer'}} onClick={()=>setSelected(d)}>
+              <div style={{fontSize:'1.4rem'}}>{typeIcon[d.type]||'📄'}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:'.9rem'}}>{d.title}</div>
+                <div className="text-muted fs-sm">{d.date} · {d.size} {d.tags.map(t=><span key={t} className="badge badge-gray" style={{marginLeft:4}}>{t}</span>)}</div>
+              </div>
+              <SourceBadge source={d.source} />
+              <button className="btn btn-ghost btn-xs">⊻</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selected && (
+        <Drawer title={selected.title} onClose={()=>setSelected(null)}>
+          <div className="mb-3 flex gap-2 flex-wrap">
+            <span className="badge badge-gray">{selected.type}</span>
+            <SourceBadge source={selected.source} />
+          </div>
+          <div style={{background:'var(--bg2)',borderRadius:10,padding:24,textAlign:'center',marginBottom:20,border:'1px solid var(--border)'}}>
+            <div style={{fontSize:'3rem',marginBottom:8}}>📄</div>
+            <div style={{fontWeight:600}}>{selected.filename}</div>
+            <div className="text-muted fs-sm">{selected.size}</div>
+            <button className="btn btn-primary btn-sm mt-3">⊻ Descargar archivo</button>
+          </div>
+          <div className="form-label">Detalles</div>
+          <table style={{width:'100%',fontSize:'.85rem'}}>
+            <tbody>
+              <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Fecha</td><td>{selected.date}</td></tr>
+              <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Tipo</td><td>{selected.type}</td></tr>
+              <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Fuente</td><td><SourceBadge source={selected.source} /></td></tr>
+              {selected.notes && <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Notas</td><td>{selected.notes}</td></tr>}
+            </tbody>
+          </table>
+          {selected.tags.length > 0 && <div className="mt-3">{selected.tags.map(t=><span key={t} className="badge badge-blue" style={{marginRight:4}}>{t}</span>)}</div>}
+        </Drawer>
+      )}
+    </div>
+  );
+};
+
+const UploadPage = ({ setPage }) => {
+  const toast = useToast();
+  const [step, setStep] = useState(1);
+  const [file, setFile] = useState(null);
+  const [form, setForm] = useState({ title: '', type: 'lab', date: new Date().toISOString().slice(0,10), notes: '' });
+  const tips = ['Asegurate de que el archivo sea legible y completo','Si es un análisis, incluí la fecha real del estudio','Podés agregar una nota para recordar el contexto'];
+  const submit = async () => {
+    await api.uploadDocument({ patientId: 'pat1', ...form, filename: file?.name || 'documento.pdf', size: file ? Math.round(file.size/1024)+'KB' : '–', tags: [] });
+    toast('Documento guardado correctamente');
+    setStep(1); setFile(null);
+    setTimeout(()=>setPage('documents'),800);
+  };
+  return (
+    <div className="page-content" style={{maxWidth:600}}>
+      <div className="mb-4 flex gap-2">
+        {[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:4,background:step>=s?'var(--accent)':'var(--bg3)'}} />)}
+      </div>
+
+      {step===1 && <>
+        <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.3rem',marginBottom:6}}>Subí tu estudio</h2>
+        <p className="text-muted fs-sm mb-4">Seleccioná el archivo que querés agregar a tu historia</p>
+        <UploadDropzone onFile={f=>{setFile(f);if(f)setForm(x=>({...x,title:f.name.replace(/\.\w+$/,'')}))}} />
+        <div className="card mt-4" style={{background:'var(--accent-light)',border:'1px solid var(--accent-border)'}}>
+          <div style={{fontWeight:600,fontSize:'.82rem',marginBottom:8}}>💡 Tips para subir documentos</div>
+          {tips.map(t=><div key={t} style={{fontSize:'.8rem',color:'var(--text2)',marginBottom:4}}>· {t}</div>)}
+        </div>
+        <button className="btn btn-primary mt-4" disabled={!file} onClick={()=>setStep(2)}>Continuar →</button>
+      </>}
+
+      {step===2 && <>
+        <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.3rem',marginBottom:6}}>Categorizá el documento</h2>
+        <p className="text-muted fs-sm mb-4">Ingresá los detalles para que quede bien organizado</p>
+        <div className="form-group"><label className="form-label">Título del documento</label><input className="form-input" value={form.title} onChange={e=>setForm(x=>({...x,title:e.target.value}))} /></div>
+        <div className="form-group"><label className="form-label">Tipo</label>
+          <select className="form-input form-select" value={form.type} onChange={e=>setForm(x=>({...x,type:e.target.value}))}>
+            <option value="lab">Análisis de laboratorio</option>
+            <option value="imagen">Imagen / Estudio diagnóstico</option>
+            <option value="receta">Receta médica</option>
+            <option value="informe">Informe médico</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div className="form-group"><label className="form-label">Fecha del estudio</label><input className="form-input" type="date" value={form.date} onChange={e=>setForm(x=>({...x,date:e.target.value}))} /></div>
+        <div className="form-group"><label className="form-label">Notas (opcional)</label><textarea className="form-input" placeholder="Médico que lo solicitó, contexto, etc." value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))} /></div>
+        <div className="flex gap-2">
+          <button className="btn btn-secondary" onClick={()=>setStep(1)}>← Volver</button>
+          <button className="btn btn-primary" onClick={()=>setStep(3)}>Continuar →</button>
+        </div>
+      </>}
+
+      {step===3 && <>
+        <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.3rem',marginBottom:6}}>Confirmá y guardá</h2>
+        <div className="card mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div style={{fontSize:'2rem'}}>{typeIcon[form.type]||'📄'}</div>
+            <div><div style={{fontWeight:700}}>{form.title}</div><div className="text-muted fs-sm">{file?.name}</div></div>
+          </div>
+          <table style={{width:'100%',fontSize:'.85rem'}}>
+            <tbody>
+              <tr><td style={{color:'var(--text3)',padding:'4px 0',width:120}}>Tipo</td><td>{form.type}</td></tr>
+              <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Fecha</td><td>{form.date}</td></tr>
+              {form.notes && <tr><td style={{color:'var(--text3)',padding:'4px 0'}}>Notas</td><td>{form.notes}</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-secondary" onClick={()=>setStep(2)}>← Volver</button>
+          <button className="btn btn-primary" onClick={submit}>✓ Guardar en mi historia</button>
+        </div>
+      </>}
+    </div>
+  );
+};
+
+const InboxPage = () => {
+  const toast = useToast();
+  const [messages, setMessages] = useState([]);
+  const [selected, setSelected] = useState(null);
+  useEffect(()=>{ api.getInbox('pat1').then(setMessages); },[]);
+
+  const accept = async (msgId, att) => {
+    await api.acceptInboxAttachment(msgId, att.id, 'pat1', att.suggestedType);
+    toast('Documento guardado en tu historia');
+    setMessages(ms => ms.map(m => m.id===msgId ? {...m, attachments: m.attachments.map(a => a.id===att.id ? {...a,accepted:true} : a)} : m));
+    if(selected?.id===msgId) setSelected(s => ({...s, attachments: s.attachments.map(a => a.id===att.id ? {...a,accepted:true} : a)}));
+  };
+  const dismiss = async (msgId, att) => {
+    await api.dismissInboxAttachment(msgId, att.id);
+    toast('Adjunto descartado','info');
+    setMessages(ms => ms.map(m => m.id===msgId ? {...m, attachments: m.attachments.map(a => a.id===att.id ? {...a,accepted:false} : a)} : m));
+    if(selected?.id===msgId) setSelected(s => ({...s, attachments: s.attachments.map(a => a.id===att.id ? {...a,accepted:false} : a)}));
+  };
+
+  return (
+    <div className="page-content">
+      <div className="card mb-4" style={{background:'var(--blue-light)',border:'1px solid #b3d0ef'}}>
+        <div style={{fontWeight:600,marginBottom:4}}>✉ Tu dirección única de inbox</div>
+        <div style={{fontFamily:'monospace',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:'6px 12px',fontSize:'.9rem',display:'inline-block',marginTop:4}}>sofia.reyes+mx8k2@historiaclinica.app</div>
+        <div className="text-muted fs-sm mt-2">Compartí esta dirección con tus laboratorios y centros de salud. Los documentos que lleguen aparecerán aquí para que los confirmes.</div>
+      </div>
+
+      <div className="card" style={{padding:0,overflow:'hidden'}}>
+        {messages.length === 0 ? <EmptyState icon="📭" title="Sin mensajes" desc="Cuando lleguen documentos por email aparecerán aquí" /> : (
+          messages.map(msg=>(
+            <div key={msg.id} className={`inbox-item ${msg.unread?'unread':''}`} onClick={()=>setSelected(msg)}>
+              <div className="flex items-center justify-between">
+                <div className="inbox-subject">{msg.subject}</div>
+                {msg.unread && <span className="badge badge-blue">Nuevo</span>}
+              </div>
+              <div className="inbox-meta">{msg.from} · {msg.date}</div>
+              <div className="mt-2">
+                {msg.attachments.map(att=>(
+                  <span key={att.id} className="attachment-chip">
+                    📎 {att.name}
+                    {att.accepted===true && <span className="badge badge-green">Guardado</span>}
+                    {att.accepted===false && <span className="badge badge-gray">Descartado</span>}
+                    {att.accepted===null && <span className="category-tag">{att.suggestedLabel}</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {selected && (
+        <Drawer title={selected.subject} onClose={()=>setSelected(null)}>
+          <div className="text-muted fs-sm mb-4">De: {selected.from}<br/>Fecha: {selected.date}</div>
+          <hr className="divider" />
+          <div className="form-label mb-2">Adjuntos</div>
+          {selected.attachments.map(att=>(
+            <div key={att.id} className="card mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span style={{fontSize:'1.2rem'}}>📎</span>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:'.9rem'}}>{att.name}</div>
+                  <div className="text-muted fs-sm">{att.size}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <div style={{fontSize:'.78rem',color:'var(--text3)'}}>Categoría sugerida:</div>
+                <span className="badge badge-blue">{att.suggestedLabel}</span>
+                <span className="text-muted fs-sm">({Math.round(att.confidence*100)}% confianza)</span>
+              </div>
+              {att.accepted===null && (
+                <div className="flex gap-2">
+                  <button className="btn btn-primary btn-sm" onClick={()=>accept(selected.id, att)}>✓ Guardar en mi historia</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>dismiss(selected.id, att)}>✕ Descartar</button>
+                </div>
+              )}
+              {att.accepted===true && <div className="badge badge-green">✓ Guardado en tu historia</div>}
+              {att.accepted===false && <div className="badge badge-gray">Descartado</div>}
+            </div>
+          ))}
+        </Drawer>
+      )}
+    </div>
+  );
+};
+
+const SharingPage = () => {
+  const toast = useToast();
+  const [grants, setGrants] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ providerEmail: '', scope: 'read', duration: '30' });
+  const [showLink, setShowLink] = useState(false);
+  useEffect(()=>{ api.getAccessGrants('pat1').then(setGrants); },[]);
+
+  const create = async () => {
+    if(!form.providerEmail) return;
+    const exp = new Date(); exp.setDate(exp.getDate()+parseInt(form.duration));
+    await api.createAccessGrant({ patientId:'pat1', providerEmail:form.providerEmail, providerName: form.providerEmail.split('@')[0], scope:form.scope, duration:form.duration, expiresAt:exp.toISOString().slice(0,10) });
+    toast('Acceso compartido correctamente');
+    api.getAccessGrants('pat1').then(setGrants);
+    setShowForm(false); setForm({ providerEmail:'', scope:'read', duration:'30' });
+  };
+  const revoke = async (id) => {
+    await api.revokeAccessGrant(id);
+    toast('Acceso revocado','info');
+    api.getAccessGrants('pat1').then(setGrants);
+  };
+
+  const active = grants.filter(g=>g.active);
+  const inactive = grants.filter(g=>!g.active);
+
+  return (
+    <div className="page-content" style={{maxWidth:700}}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.2rem'}}>Compartir historia clínica</h2>
+          <p className="text-muted fs-sm mt-1">Vos tenés el control de quién puede ver tu información</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-secondary btn-sm" onClick={()=>setShowLink(true)}>🔗 Link temporal</button>
+          <button className="btn btn-primary btn-sm" onClick={()=>setShowForm(true)}>+ Compartir</button>
+        </div>
+      </div>
+
+      {active.length === 0 ? <EmptyState icon="🔐" title="Sin accesos activos" desc="Compartí tu historia con tus médicos de confianza" /> : (
+        <div className="stack mb-4">
+          {active.map(g=>(
+            <div key={g.id} className="grant-card">
+              <div className="avatar">{g.providerName[0]}</div>
+              <div className="grant-info">
+                <div className="grant-name">{g.providerName}</div>
+                <div className="grant-detail">{g.scope==='read'?'Solo lectura':'Lectura y carga de consultas'} · Expira {g.expiresAt}</div>
+              </div>
+              <span className="badge badge-green">Activo</span>
+              <button className="btn btn-danger btn-xs" onClick={()=>revoke(g.id)}>Revocar</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {inactive.length > 0 && (
+        <>
+          <div className="form-label mb-2">Accesos anteriores</div>
+          {inactive.map(g=>(
+            <div key={g.id} className="grant-card" style={{opacity:0.6}}>
+              <div className="avatar" style={{background:'var(--bg3)'}}>{g.providerName[0]}</div>
+              <div className="grant-info"><div className="grant-name">{g.providerName}</div><div className="grant-detail">Revocado</div></div>
+              <span className="badge badge-gray">Inactivo</span>
+            </div>
+          ))}
+        </>
+      )}
+
+      {showForm && (
+        <Modal title="Compartir historia clínica" onClose={()=>setShowForm(false)}>
+          <div className="form-group"><label className="form-label">Email del profesional</label><input className="form-input" placeholder="medico@ejemplo.com" value={form.providerEmail} onChange={e=>setForm(x=>({...x,providerEmail:e.target.value}))} /></div>
+          <div className="form-group"><label className="form-label">Alcance</label>
+            <select className="form-input form-select" value={form.scope} onChange={e=>setForm(x=>({...x,scope:e.target.value}))}>
+              <option value="read">Solo lectura</option>
+              <option value="read_write">Lectura + carga de consultas</option>
+            </select>
+          </div>
+          <div className="form-group"><label className="form-label">Duración</label>
+            <select className="form-input form-select" value={form.duration} onChange={e=>setForm(x=>({...x,duration:e.target.value}))}>
+              <option value="7">7 días</option>
+              <option value="30">30 días</option>
+              <option value="90">90 días</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button className="btn btn-secondary" onClick={()=>setShowForm(false)}>Cancelar</button>
+            <button className="btn btn-primary" onClick={create}>Compartir</button>
+          </div>
+        </Modal>
+      )}
+
+      {showLink && (
+        <Modal title="Link de vista compartida" onClose={()=>setShowLink(false)}>
+          <p className="text-muted fs-sm mb-4">Este link permite ver tu historia de forma temporal, sin necesidad de que el profesional tenga cuenta.</p>
+          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',fontFamily:'monospace',fontSize:'.82rem',wordBreak:'break-all'}}>
+            https://historiaclinica.app/view/pat1?token=mk8x2q&exp=2025-09-01
+          </div>
+          <div className="mt-3 text-center" style={{fontSize:'4rem'}}>◻</div>
+          <div className="text-center text-muted fs-sm">QR placeholder — expira en 30 días</div>
+          <button className="btn btn-secondary w-full mt-3" style={{justifyContent:'center'}} onClick={()=>setShowLink(false)}>Cerrar</button>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+const AuditPage = () => {
+  const [log, setLog] = useState([]);
+  const [filter, setFilter] = useState('all');
+  useEffect(()=>{ api.getAuditLog('pat1').then(setLog); },[]);
+  const events = ['all','VIEW_RECORD','DOWNLOAD_DOC','CREATE_ENCOUNTER','UPLOAD_DOC','SHARE_GRANTED','SHARE_REVOKED'];
+  const filtered = filter==='all' ? log : log.filter(l=>l.event===filter);
+  return (
+    <div className="page-content">
+      <div className="mb-4 flex gap-2 flex-wrap">
+        {events.map(e=><button key={e} className={`btn btn-xs ${filter===e?'btn-primary':'btn-secondary'}`} onClick={()=>setFilter(e)}>{e==='all'?'Todos':e.replace(/_/g,' ')}</button>)}
+      </div>
+      <div className="card" style={{padding:0,overflow:'hidden'}}>
+        <table>
+          <thead><tr><th>Evento</th><th>Actor</th><th>Ítem</th><th>Fecha</th></tr></thead>
+          <tbody>
+            {filtered.map(l=>(
+              <tr key={l.id}>
+                <td><EventBadge event={l.event} /></td>
+                <td>
+                  <div style={{fontWeight:600,fontSize:'.85rem'}}>{l.actor}</div>
+                  <div className="text-muted fs-sm">{l.actorType}</div>
+                </td>
+                <td style={{fontSize:'.85rem'}}>{l.item}</td>
+                <td className="text-muted fs-sm">{l.ts}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length===0 && <EmptyState icon="🔍" title="Sin eventos" desc="No hay eventos que coincidan con el filtro" />}
+      </div>
+    </div>
+  );
+};
+
+// ─── PROVIDER PAGES ────────────────────────────────────────────────────
+const ProviderDashboard = ({ setPage }) => {
+  const { user } = useAuth();
+  return (
+    <div className="page-content">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 style={{fontFamily:'Fraunces, serif',fontSize:'1.5rem'}}>Hola, {user?.name} 👋</h1>
+          <p className="text-muted">Registrá una consulta en 90 segundos</p>
+        </div>
+        <button className="btn btn-primary" onClick={()=>setPage('pro-encounter')}>+ Nueva consulta</button>
+      </div>
+      <div className="grid-3 mb-4">
+        <div className="stat-card"><div className="stat-value">3</div><div className="stat-label">pacientes con acceso</div></div>
+        <div className="stat-card"><div className="stat-value">12</div><div className="stat-label">consultas este mes</div></div>
+        <div className="stat-card"><div className="stat-value">5</div><div className="stat-label">documentos subidos</div></div>
+      </div>
+      <div className="card">
+        <h3 className="fw-600 mb-3" style={{fontSize:'.9rem'}}>Pacientes recientes</h3>
+        {mockDb.patients.slice(0,3).map(p=>(
+          <div key={p.id} className="flex items-center gap-3 mb-3">
+            <div className="avatar lg">{p.name[0]}</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:600}}>{p.name}</div>
+              <div className="text-muted fs-sm">{p.conditions.join(', ')||'Sin condiciones crónicas'}</div>
+            </div>
+            <button className="btn btn-secondary btn-xs" onClick={()=>setPage('pro-patients')}>Ver historia</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ProviderPatients = ({ setPage, setSelectedPatientId }) => {
+  const [patients, setPatients] = useState([]);
+  useEffect(()=>{ api.getProviderPatients('p1').then(setPatients); },[]);
+  return (
+    <div className="page-content">
+      <div className="search-bar mb-4" style={{maxWidth:'100%'}}>
+        <span style={{color:'var(--text3)',fontSize:12}}>⌕</span>
+        <input placeholder="Buscar paciente por nombre…" />
+      </div>
+      {patients.length===0 ? <EmptyState icon="👥" title="Sin pacientes con acceso" desc="Los pacientes que te den acceso aparecerán aquí" /> : (
+        <div className="stack">
+          {patients.map(p=>(
+            <div key={p.id} className="card-sm flex items-center gap-3" style={{cursor:'pointer'}} onClick={()=>{setSelectedPatientId(p.id);setPage('pro-patient-detail')}}>
+              <div className="avatar lg">{p.name[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600}}>{p.name}</div>
+                <div className="text-muted fs-sm">{p.conditions.join(', ')||'Sin condiciones registradas'}</div>
+                <div className="mt-1">{p.allergies.map(a=><span key={a} className="badge badge-red" style={{marginRight:4}}>{a}</span>)}</div>
+              </div>
+              <span className="badge badge-green">Acceso activo</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ProviderPatientDetail = ({ patientId, setPage }) => {
+  const [patient, setPatient] = useState(null);
+  const [tab, setTab] = useState('resumen');
+  const [timeline, setTimeline] = useState([]);
+  const [meds, setMeds] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const pid = patientId || 'pat1';
+  useEffect(()=>{ api.getPatient(pid).then(setPatient); api.getTimeline(pid).then(setTimeline); api.getMedications(pid).then(setMeds); api.getDocuments(pid).then(setDocs); },[pid]);
+
+  if(!patient) return <div className="page-content"><p className="text-muted">Cargando…</p></div>;
+  const age = Math.floor((Date.now()-new Date(patient.dob))/(365.25*24*3600*1000));
+  return (
+    <div className="page-content">
+      <div className="flex items-center gap-3 mb-4">
+        <button className="btn btn-ghost btn-sm" onClick={()=>setPage('pro-patients')}>← Volver</button>
+        <div className="avatar lg">{patient.name[0]}</div>
+        <div style={{flex:1}}>
+          <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.2rem'}}>{patient.name}</h2>
+          <div className="text-muted fs-sm">{age} años · {patient.bloodType}</div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={()=>setPage('pro-encounter')}>+ Nueva consulta</button>
+      </div>
+
+      <div className="tabs">
+        {['resumen','timeline','documentos','medicación'].map(t=><button key={t} className={`tab ${tab===t?'active':''}`} onClick={()=>setTab(t)}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>)}
+      </div>
+
+      {tab==='resumen' && (
+        <div className="grid-2">
+          <div className="card"><h3 className="fw-600 mb-3 fs-sm">Alergias</h3>{patient.allergies.length?patient.allergies.map(a=><span key={a} className="badge badge-red" style={{marginRight:4}}>{a}</span>):<span className="text-muted fs-sm">Sin alergias registradas</span>}</div>
+          <div className="card"><h3 className="fw-600 mb-3 fs-sm">Condiciones crónicas</h3>{patient.conditions.length?patient.conditions.map(c=><span key={c} className="badge badge-amber" style={{marginRight:4}}>{c}</span>):<span className="text-muted fs-sm">Sin condiciones</span>}</div>
+          <div className="card" style={{gridColumn:'1/-1'}}><h3 className="fw-600 mb-3 fs-sm">Medicación activa</h3>{meds.filter(m=>m.active).map(m=><div key={m.id} className="med-item"><div style={{fontSize:'1.1rem'}}>💊</div><div><div className="med-name">{m.name}</div><div className="med-detail">{m.dose} · {m.frequency}</div></div></div>)}</div>
+        </div>
+      )}
+      {tab==='timeline' && <div className="timeline">{timeline.map(item=><TimelineItem key={item.id} item={item} onClick={()=>{}} />)}</div>}
+      {tab==='documentos' && <div className="stack">{docs.map(d=><div key={d.id} className="card-sm flex items-center gap-3"><span style={{fontSize:'1.2rem'}}>{typeIcon[d.type]||'📄'}</span><div style={{flex:1}}><div style={{fontWeight:600,fontSize:'.9rem'}}>{d.title}</div><div className="text-muted fs-sm">{d.date}</div></div><SourceBadge source={d.source} /><button className="btn btn-ghost btn-xs">⊻</button></div>)}</div>}
+      {tab==='medicación' && <div className="card">{meds.map(m=><div key={m.id} className="med-item"><div style={{fontSize:'1.3rem'}}>💊</div><div style={{flex:1}}><div className="med-name">{m.name}</div><div className="med-detail">{m.dose} · {m.frequency} · {m.duration}</div></div><span className={`badge ${m.active?'badge-green':'badge-gray'}`}>{m.active?'Activo':'Suspendido'}</span></div>)}</div>}
+    </div>
+  );
+};
+
+const NewEncounterPage = ({ setPage }) => {
+  const toast = useToast();
+  const [form, setForm] = useState({ reason: '', diagnosis: '', notes: '', icd10: '' });
+  const [meds, setMeds] = useState([{name:'',dose:'',freq:'',duration:''}]);
+  const [file, setFile] = useState(null);
+  const upd = (k,v) => setForm(x=>({...x,[k]:v}));
+  const updMed = (i,k,v) => setMeds(ms=>ms.map((m,idx)=>idx===i?{...m,[k]:v}:m));
+  const templates = ['Control clínico general','Consulta por guardia','Seguimiento medicación','Evaluación nueva consulta'];
+
+  const save = async () => {
+    if(!form.reason||!form.diagnosis) { toast('Completá motivo y diagnóstico','error'); return; }
+    await api.createEncounter({ patientId:'pat1', providerId:'p1', orgId:'o1', ...form, type:'consulta' });
+    toast('Consulta guardada correctamente');
+    setTimeout(()=>setPage('pro-patients'),600);
+  };
+
+  return (
+    <div className="page-content" style={{maxWidth:680}}>
+      <div className="flex items-center gap-2 mb-4">
+        <button className="btn btn-ghost btn-sm" onClick={()=>setPage('pro-patients')}>← Volver</button>
+        <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.2rem'}}>Nueva consulta</h2>
+      </div>
+
+      <div className="mb-3">
+        <div className="form-label mb-2">Plantillas rápidas</div>
+        <div className="flex gap-2 flex-wrap">
+          {templates.map(t=><button key={t} className="btn btn-secondary btn-xs" onClick={()=>upd('reason',t)}>{t}</button>)}
+        </div>
+      </div>
+
+      <div className="card mb-3">
+        <div className="form-group"><label className="form-label">Paciente</label>
+          <select className="form-input form-select">
+            <option>Sofía Reyes (pat@historiaclinica.app)</option>
+            <option>Jorge Morales</option>
+          </select>
+        </div>
+        <div className="form-group"><label className="form-label">Motivo de consulta *</label><input className="form-input" value={form.reason} onChange={e=>upd('reason',e.target.value)} placeholder="Ej: Control clínico anual" /></div>
+        <div className="form-group"><label className="form-label">Diagnóstico *</label><textarea className="form-input" value={form.diagnosis} onChange={e=>upd('diagnosis',e.target.value)} placeholder="Diagnóstico principal" /></div>
+        <div className="form-group"><label className="form-label">Notas clínicas</label><textarea className="form-input" style={{minHeight:100}} value={form.notes} onChange={e=>upd('notes',e.target.value)} placeholder="Anamnesis, examen físico, indicaciones…" /></div>
+        <div className="form-group"><label className="form-label">CIE-10 (opcional)</label><input className="form-input" value={form.icd10} onChange={e=>upd('icd10',e.target.value)} placeholder="Ej: E03.9" /></div>
+      </div>
+
+      <div className="card mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="fw-600 fs-sm">Prescripciones</h3>
+          <button className="btn btn-ghost btn-xs" onClick={()=>setMeds(m=>[...m,{name:'',dose:'',freq:'',duration:''}])}>+ Agregar</button>
+        </div>
+        {meds.map((m,i)=>(
+          <div key={i} className="grid-4 mb-2" style={{gap:8}}>
+            <input className="form-input" style={{gridColumn:'1/3'}} placeholder="Medicamento" value={m.name} onChange={e=>updMed(i,'name',e.target.value)} />
+            <input className="form-input" placeholder="Dosis" value={m.dose} onChange={e=>updMed(i,'dose',e.target.value)} />
+            <input className="form-input" placeholder="Frecuencia" value={m.freq} onChange={e=>updMed(i,'freq',e.target.value)} />
+          </div>
+        ))}
+      </div>
+
+      <div className="card mb-4">
+        <h3 className="fw-600 fs-sm mb-3">Adjuntar documento (opcional)</h3>
+        <UploadDropzone onFile={setFile} />
+      </div>
+
+      <div className="flex gap-2">
+        <button className="btn btn-secondary" onClick={()=>setPage('pro-patients')}>Cancelar</button>
+        <button className="btn btn-primary" onClick={save}>✓ Guardar consulta</button>
+      </div>
+    </div>
+  );
+};
+
+// ─── ORG PAGES ─────────────────────────────────────────────────────────
+const OrgDashboard = () => {
+  const [stats, setStats] = useState({});
+  useEffect(()=>{ api.getOrgStats('o1').then(setStats); },[]);
+  return (
+    <div className="page-content">
+      <h1 style={{fontFamily:'Fraunces, serif',fontSize:'1.5rem',marginBottom:20}}>Clínica del Sol — Panel</h1>
+      <div className="grid-3 mb-6">
+        <div className="stat-card"><div className="stat-value">{stats.encounters||0}</div><div className="stat-label">Consultas registradas</div></div>
+        <div className="stat-card"><div className="stat-value">{stats.documents||0}</div><div className="stat-label">Documentos subidos</div></div>
+        <div className="stat-card"><div className="stat-value">{stats.providers||0}</div><div className="stat-label">Profesionales activos</div></div>
+      </div>
+      <div className="card">
+        <div className="form-label mb-2">Actividad reciente</div>
+        {mockDb.auditLog.slice(0,5).map(l=>(
+          <div key={l.id} className="flex items-center gap-3 mb-3">
+            <EventBadge event={l.event} />
+            <div style={{flex:1,fontSize:'.85rem'}}>{l.actor} — {l.item}</div>
+            <span className="text-muted fs-sm">{l.ts}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const OrgStaff = () => {
+  const toast = useToast();
+  const [providers, setProviders] = useState([]);
+  const [showInvite, setShowInvite] = useState(false);
+  const [email, setEmail] = useState('');
+  useEffect(()=>{ api.getOrgProviders('o1').then(setProviders); },[]);
+  return (
+    <div className="page-content">
+      <div className="flex items-center justify-between mb-4">
+        <h2 style={{fontFamily:'Fraunces, serif',fontSize:'1.2rem'}}>Profesionales del centro</h2>
+        <button className="btn btn-primary btn-sm" onClick={()=>setShowInvite(true)}>+ Invitar profesional</button>
+      </div>
+      <div className="card" style={{padding:0,overflow:'hidden'}}>
+        <table>
+          <thead><tr><th>Profesional</th><th>Especialidad</th><th>Matrícula</th><th>Rol</th></tr></thead>
+          <tbody>
+            {providers.map(p=>(
+              <tr key={p.id}>
+                <td><div style={{fontWeight:600}}>{p.name}</div><div className="text-muted fs-sm">{p.email}</div></td>
+                <td>{p.specialty}</td>
+                <td className="fs-sm">{p.matricula}</td>
+                <td><span className="badge badge-green">Profesional</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {showInvite && (
+        <Modal title="Invitar profesional" onClose={()=>setShowInvite(false)}>
+          <div className="form-group"><label className="form-label">Email institucional</label><input className="form-input" placeholder="medico@clinica.com" value={email} onChange={e=>setEmail(e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">Rol</label>
+            <select className="form-input form-select"><option>Profesional</option><option>Admin del centro</option></select>
+          </div>
+          <div className="flex gap-2">
+            <button className="btn btn-secondary" onClick={()=>setShowInvite(false)}>Cancelar</button>
+            <button className="btn btn-primary" onClick={()=>{toast('Invitación enviada');setShowInvite(false)}}>Enviar invitación</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+const OrgSettings = () => (
+  <div className="page-content" style={{maxWidth:600}}>
+    <div className="card mb-4">
+      <h3 className="fw-600 mb-4 fs-sm">Datos del centro</h3>
+      <div className="form-group"><label className="form-label">Nombre del centro</label><input className="form-input" defaultValue="Clínica del Sol" /></div>
+      <div className="form-group"><label className="form-label">Dirección</label><input className="form-input" defaultValue="Av. Corrientes 1234, CABA" /></div>
+      <div className="form-group"><label className="form-label">Email de contacto</label><input className="form-input" defaultValue="contacto@clinicadelsol.com" /></div>
+    </div>
+    <div className="card mb-4">
+      <h3 className="fw-600 mb-4 fs-sm">Plantilla de notas clínicas</h3>
+      <div className="form-group"><label className="form-label">Plantilla por defecto</label><textarea className="form-input" style={{minHeight:120}} defaultValue="Motivo de consulta:\n\nExamen físico:\n\nDiagnóstico:\n\nIndicaciones:" /></div>
+    </div>
+    <button className="btn btn-primary">Guardar cambios</button>
+  </div>
+);
+
+// ─── PAGE ROUTER ───────────────────────────────────────────────────────
+const PageRouter = ({ page, setPage, role }) => {
+  const [selectedPatientId, setSelectedPatientId] = useState('pat1');
+  const pages = {
+    // Patient
+    dashboard: <PatientDashboard setPage={setPage} />,
+    timeline: <TimelinePage />,
+    documents: <DocumentsPage setPage={setPage} />,
+    upload: <UploadPage setPage={setPage} />,
+    inbox: <InboxPage />,
+    sharing: <SharingPage />,
+    audit: <AuditPage />,
+    // Provider
+    'pro-dashboard': <ProviderDashboard setPage={setPage} />,
+    'pro-patients': <ProviderPatients setPage={setPage} setSelectedPatientId={setSelectedPatientId} />,
+    'pro-patient-detail': <ProviderPatientDetail patientId={selectedPatientId} setPage={setPage} />,
+    'pro-encounter': <NewEncounterPage setPage={setPage} />,
+    // Org
+    'org-dashboard': <OrgDashboard />,
+    'org-staff': <OrgStaff />,
+    'org-settings': <OrgSettings />,
+  };
+  return pages[page] || <EmptyState icon="🔍" title="Página no encontrada" desc={`Ruta: ${page}`} />;
+};
+
+// ─── ROOT ──────────────────────────────────────────────────────────────
+const App = () => {
+  const { user, login } = useAuth();
+  const toast = useToast();
+  const [route, setRoute] = useState('landing');
+  const [page, setPage] = useState('dashboard');
+
+  const handleLogin = (userData, tenant) => {
+    login(userData, tenant);
+    setRoute('app');
+    setPage(userData.role==='patient'?'dashboard':userData.role==='provider'?'pro-dashboard':'org-dashboard');
+    toast(`Bienvenido/a, ${userData.name}!`);
+  };
+
+  const { user: u } = useAuth();
+  if (u && route !== 'app') { setRoute('app'); }
+
+  if (route === 'landing') return <LandingPage onNavigate={setRoute} />;
+  if (route === 'login') return <LoginPage onNavigate={setRoute} onLogin={handleLogin} />;
+  if (route === 'app' && u) return <AppShell page={page} setPage={setPage} role={u.role} />;
+  return <LandingPage onNavigate={setRoute} />;
+};
+
+const Root = () => (
+  <AuthProvider>
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </AuthProvider>
+);
+
+ReactDOM.render(<Root />, document.getElementById('root'));
+</script>
+</body>
+</html>

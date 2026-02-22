@@ -19,10 +19,11 @@ export default async function AuditPage() {
     );
   }
 
+  const supabase = await createClient();
   const { data: events } = await supabase
     .from('audit_events')
     .select('*')
-    .eq('patient_id', patient.id)
+    .eq('patient_id', patientId)
     .order('occurred_at', { ascending: false });
 
   return (

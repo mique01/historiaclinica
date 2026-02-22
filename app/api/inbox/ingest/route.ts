@@ -10,9 +10,22 @@ const classify = (text: string) => {
 };
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-inbox-token') !== process.env.INBOX_INGEST_TOKEN) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (req.headers.get('x-inbox-token') !== process.env.INBOX_INGEST_TOKEN) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const adminClient = getAdminClient();
   const body = await req.json();
-  const { data: msg } = await adminClient.from('inbox_messages').insert({ patient_id: body.patientId, sender_email: body.from, subject: body.subject, body_text: body.bodyText }).select().single();
+  const { data: msg, error: msgError } = await adminClient
+    .from('inbox_messages')
+    .insert({ patient_id: body.patientId, sender_email: body.from, subject: body.subject, body_text: body.bodyText })
+    .select()
+    .maybeSingle();
+
+  if (msgError || !msg) {
+    return NextResponse.json({ error: msgError?.message ?? 'message_create_failed' }, { status: 400 });
+  }
+
   for (const att of body.attachments ?? []) {
     let storagePath: string | null = null;
     if (att.base64) {

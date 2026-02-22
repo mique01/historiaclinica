@@ -16,6 +16,6 @@ export async function requireUser() {
 
 export async function getRole(userId: string): Promise<AppRole | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from('profiles').select('role').eq('id', userId).single();
+  const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
   return (data?.role as AppRole) ?? null;
 }

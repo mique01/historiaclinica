@@ -19,7 +19,8 @@ export default async function DashboardPage() {
     );
   }
 
-  const { data: docs } = await supabase.from('documents').select('id').eq('patient_id', patient.id);
+  const supabase = await createClient();
+  const { data: docs } = await supabase.from('documents').select('id').eq('patient_id', patientId);
   return (
     <div>
       <h1 className="text-2xl font-serif">Dashboard</h1>

@@ -1,0 +1,27 @@
+import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth';
+import { getPatientIdForUser } from '@/lib/patient';
+
+export default async function DashboardPage() {
+  const user = await requireUser();
+  const patientId = await getPatientIdForUser(user.id);
+
+  if (!patientId) {
+    return (
+      <div>
+        <h1 className="text-2xl font-serif">Dashboard</h1>
+        <div className="mt-4 card">No hay perfil de paciente asociado a esta cuenta.</div>
+      </div>
+    );
+  }
+
+  const supabase = await createClient();
+  const { data: docs } = await supabase.from('documents').select('id').eq('patient_id', patientId);
+  return (
+    <div>
+      <h1 className="text-2xl font-serif">Dashboard</h1>
+      <p className="text-stone-600">Resumen del paciente.</p>
+      <div className="mt-4 card">Documentos: {docs?.length ?? 0}</div>
+    </div>
+  );
+}

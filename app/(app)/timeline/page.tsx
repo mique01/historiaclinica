@@ -15,11 +15,10 @@ export default async function TimelinePage() {
     );
   }
 
-  const supabase = await createClient();
   const { data: encounters } = await supabase
     .from('encounters')
     .select('*')
-    .eq('patient_id', patientId)
+    .eq('patient_id', patient.id)
     .order('occurred_at', { ascending: false });
 
   return (

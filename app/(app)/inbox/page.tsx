@@ -16,11 +16,10 @@ export default async function InboxPage() {
     );
   }
 
-  const supabase = await createClient();
   const { data: msgs } = await supabase
     .from('inbox_messages')
     .select('*, inbox_attachments(*)')
-    .eq('patient_id', patientId)
+    .eq('patient_id', patient.id)
     .order('received_at', { ascending: false });
 
   return (

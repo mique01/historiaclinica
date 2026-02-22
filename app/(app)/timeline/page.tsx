@@ -1,12 +1,16 @@
 import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { getPatientIdForUser } from '@/lib/patient';
 
 export default async function TimelinePage() {
   const user = await requireUser();
-  const patientId = await getPatientIdForUser(user.id);
+  const supabase = await createClient();
+  const { data: patient } = await supabase
+    .from('patients')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  if (!patientId) {
+  if (!patient) {
     return (
       <div>
         <h1 className="text-2xl font-serif">Timeline</h1>
@@ -15,11 +19,10 @@ export default async function TimelinePage() {
     );
   }
 
-  const supabase = await createClient();
   const { data: encounters } = await supabase
     .from('encounters')
     .select('*')
-    .eq('patient_id', patientId)
+    .eq('patient_id', patient.id)
     .order('occurred_at', { ascending: false });
 
   return (

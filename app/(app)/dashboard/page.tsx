@@ -1,12 +1,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
-import { getPatientIdForUser } from '@/lib/patient';
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const patientId = await getPatientIdForUser(user.id);
+  const supabase = await createClient();
+  const { data: patient } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  if (!patientId) {
+  if (!patient) {
     return (
       <div>
         <h1 className="text-2xl font-serif">Dashboard</h1>
@@ -15,8 +19,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const supabase = await createClient();
-  const { data: docs } = await supabase.from('documents').select('id').eq('patient_id', patientId);
+  const { data: docs } = await supabase.from('documents').select('id').eq('patient_id', patient.id);
   return (
     <div>
       <h1 className="text-2xl font-serif">Dashboard</h1>

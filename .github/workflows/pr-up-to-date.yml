@@ -1,0 +1,19 @@
+name: PR up-to-date guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  up_to_date:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure branch contains latest base
+        run: |
+          BASE_REF="origin/${{ github.base_ref }}"
+          ./scripts/check-branch-up-to-date.sh "$BASE_REF"

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
+import { getPatientIdForUser } from '@/lib/patient';
 
 export async function POST(_: Request, { params }: { params: Promise<{ attachmentId: string }> }) {
   const { attachmentId } = await params;

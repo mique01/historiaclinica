@@ -1,17 +1,13 @@
 import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getPatientIdForUser } from '@/lib/patient';
 import AcceptButton from './ui';
 
 export default async function InboxPage() {
   const user = await requireUser();
-  const supabase = await createClient();
-  const { data: patient } = await supabase
-    .from('patients')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  const patientId = await getPatientIdForUser(user.id);
 
-  if (!patient) {
+  if (!patientId) {
     return (
       <div>
         <h1 className="text-2xl font-serif">Inbox</h1>

@@ -1,0 +1,4 @@
+/* Compatibility global stylesheet entrypoint for projects importing `@/src/index.css` */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

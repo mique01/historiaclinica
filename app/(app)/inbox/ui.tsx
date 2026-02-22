@@ -1,0 +1,2 @@
+'use client';
+export default function AcceptButton({ id }: { id: string }) { return <div className="flex gap-2"><button className="btn btn-primary" onClick={()=>fetch(`/api/inbox/attachments/${id}/accept`,{method:'POST'}).then(()=>location.reload())}>Aceptar</button><button className="btn btn-secondary" onClick={()=>fetch(`/api/inbox/attachments/${id}/reject`,{method:'POST'}).then(()=>location.reload())}>Rechazar</button></div>; }

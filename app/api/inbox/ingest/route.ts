@@ -18,9 +18,20 @@ export async function POST(req: NextRequest) {
     if (att.base64) {
       storagePath = `patient/${body.patientId}/inbox-${Date.now()}-${att.filename}`;
       const bin = Buffer.from(att.base64, 'base64');
-      await adminClient.storage.from('documents').upload(storagePath, bin, { contentType: att.mime || 'application/pdf', upsert: false });
+      await adminClient.storage
+        .from('documents')
+        .upload(storagePath, bin, { contentType: att.mime || 'application/pdf', upsert: false });
     }
-    await adminClient.from('inbox_attachments').insert({ message_id: msg.id, filename: att.filename, mime: att.mime ?? 'application/pdf', size: att.size ?? 0, storage_path: storagePath, suggested_type: classify(`${att.filename} ${body.subject}`) });
+
+    await adminClient.from('inbox_attachments').insert({
+      message_id: msg.id,
+      filename: att.filename,
+      mime: att.mime ?? 'application/pdf',
+      size: att.size ?? 0,
+      storage_path: storagePath,
+      suggested_type: classify(`${att.filename} ${body.subject}`),
+    });
   }
+
   return NextResponse.json({ ok: true, messageId: msg.id });
 }

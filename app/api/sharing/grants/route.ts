@@ -20,14 +20,18 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
-  const patientId = await getPatientIdForUser(user.id);
-  const body = await req.json();
-
-  if (!patientId) return NextResponse.json({ error: 'patient_not_found' }, { status: 404 });
-
   const supabase = await createClient();
+  const body = await req.json();
+  const { data: patient } = await supabase
+    .from('patients')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (!patient) return NextResponse.json({ error: 'patient_not_found' }, { status: 404 });
+
   await supabase.from('access_grants').insert({
-    patient_id: patientId,
+    patient_id: patient.id,
     provider_user_id: body.providerUserId ?? user.id,
     scope: body.scope ?? 'READ',
     expires_at: body.expiresAt ?? null,

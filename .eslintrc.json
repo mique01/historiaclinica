@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "rules": {
+    "no-redeclare": "error",
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}

@@ -17,6 +17,9 @@ git checkout -b fix/mi-cambio
 ## 3) Verificar localmente antes del PR
 ```bash
 npm run typecheck
+npm run guard:conflicts
+npm run guard:lint
+npm run guard:regressions
 NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=dummy \
 SUPABASE_SERVICE_ROLE_KEY=dummy \

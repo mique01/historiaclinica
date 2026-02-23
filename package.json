@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "guard:conflicts": "bash scripts/check-conflict-markers.sh",
-    "guard:lint": "npm run lint -- --max-warnings=0"
+    "guard:lint": "npm run lint -- --max-warnings=0",
+    "guard:regressions": "bash scripts/guard-regressions.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",

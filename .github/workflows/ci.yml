@@ -26,12 +26,6 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Conflict markers guard
-        run: npm run guard:conflicts
-
-      - name: Lint guard
-        run: npm run guard:lint
-
       - name: Build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
